@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>打小蜜蜂遊戲</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        .game-container {
+            text-align: center;
+        }
+        
+        h1 {
+            color: #fff;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            margin-bottom: 20px;
+        }
+        
+        canvas {
+            border: 3px solid #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(255,255,255,0.3);
+            background: #000;
+        }
+        
+        .game-info {
+            margin-top: 20px;
+            color: #fff;
+            font-size: 18px;
+        }
+        
+        .controls {
+            margin-top: 15px;
+            color: #fff;
+            font-size: 14px;
+        }
+        
+        .game-over {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.8);
+            color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            display: none;
+        }
+        
+        .restart-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+        
+        .restart-btn:hover {
+            background: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>🐝 打小蜜蜂遊戲 🐝</h1>
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
+        <div class="game-info">
+            <span>分數: <span id="score">0</span></span> | 
+            <span>生命: <span id="lives">3</span></span> | 
+            <span>等級: <span id="level">1</span></span>
+        </div>
+        <div class="controls">
+            使用 ← → 鍵移動飛船，空白鍵發射子彈
+        </div>
+    </div>
+    
+    <div class="game-over" id="gameOver">
+        <h2>遊戲結束</h2>
+        <p>最終分數: <span id="finalScore">0</span></p>
+        <button class="restart-btn" onclick="restartGame()">重新開始</button>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html> 
