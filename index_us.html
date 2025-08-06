@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Space Invaders Game - Enhanced</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .game-container {
+            text-align: center;
+            position: relative;
+        }
+        h1 {
+            color: #fff;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            margin-bottom: 20px;
+            font-size: 2.5em;
+        }
+        canvas {
+            border: 3px solid #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(255,255,255,0.3);
+            background: #000;
+        }
+        .game-info {
+            margin-top: 20px;
+            color: #fff;
+            font-size: 18px;
+            display: flex;
+            justify-content: space-around;
+            max-width: 800px;
+        }
+        .info-item {
+            background: rgba(255,255,255,0.1);
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin: 0 5px;
+        }
+        .controls {
+            margin-top: 15px;
+            color: #fff;
+            font-size: 14px;
+            background: rgba(255,255,255,0.1);
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .game-over {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.9);
+            color: #fff;
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            display: none;
+            border: 2px solid #fff;
+        }
+        .restart-btn {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+        .restart-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(76,175,80,0.4);
+        }
+        .power-up-indicator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255,255,255,0.2);
+            padding: 10px;
+            border-radius: 5px;
+            color: #fff;
+            font-size: 12px;
+        }
+        .pause-btn {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(255,255,255,0.2);
+            color: #fff;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .pause-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        .achievement {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            animation: slideIn 0.5s ease-out;
+            z-index: 1000;
+        }
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        .level-up {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(45deg, #00d2ff, #3a7bd5);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            animation: levelUp 1s ease-out;
+            z-index: 1000;
+        }
+        @keyframes levelUp {
+            0% {
+                transform: translate(-50%, -50%) scale(0);
+                opacity: 0;
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(1.2);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>🚀 Space Invaders Game - Enhanced 🐝</h1>
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
+        
+        <button class="pause-btn" id="pauseBtn">⏸️ Pause</button>
+        <div class="power-up-indicator" id="powerUpIndicator"></div>
+        
+        <div class="game-info">
+            <div class="info-item">
+                <span>🎯 Score: <span id="score">0</span></span>
+            </div>
+            <div class="info-item">
+                <span>❤️ Lives: <span id="lives">3</span></span>
+            </div>
+            <div class="info-item">
+                <span>🏆 Level: <span id="level">1</span></span>
+            </div>
+            <div class="info-item">
+                <span>⚡ Combo: <span id="combo">0</span></span>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <strong>Controls:</strong> ← → Move | Space Shoot | P Pause | Collect power-ups to boost firepower!
+        </div>
+    </div>
+    
+    <div class="game-over" id="gameOver">
+        <h2>🎮 Game Over</h2>
+        <p>🏆 Final Score: <span id="finalScore">0</span></p>
+        <p>🏅 Highest Level: <span id="finalLevel">1</span></p>
+        <p>🔥 Highest Combo: <span id="finalCombo">0</span></p>
+        <button class="restart-btn" onclick="restartGame()">🔄 Restart</button>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html> 
