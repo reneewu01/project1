@@ -4,12 +4,14 @@ import { SharedPlanView } from '@/components/shared-plan-view'
 import { Suspense } from 'react'
 
 interface PlanPageProps {
-  searchParams: { share?: string }
+  searchParams: Promise<{ share?: string }>
 }
 
-export default function PlanPage({ searchParams }: PlanPageProps) {
+export default async function PlanPage({ searchParams }: PlanPageProps) {
+  const params = await searchParams
+  
   // 如果有分享參數，顯示分享的行程視圖
-  if (searchParams.share) {
+  if (params.share) {
     return (
       <Suspense fallback={
         <div className="min-h-screen bg-background flex items-center justify-center">
