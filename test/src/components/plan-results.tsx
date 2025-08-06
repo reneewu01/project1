@@ -23,6 +23,7 @@ import {
   Plane
 } from 'lucide-react'
 import { formatCurrency, formatDate, getActivityIcon, getAccommodationIcon, getTransportationIcon } from '@/lib/utils'
+import { ShareModal } from '@/components/share-modal'
 
 export function PlanResults() {
   const { preferences, isLoading, currentPlan } = useTravelStore()
@@ -359,10 +360,12 @@ export function PlanResults() {
                 <Bookmark className="h-4 w-4 mr-2" />
                 收藏
               </Button>
-              <Button variant="outline" size="sm">
-                <Share2 className="h-4 w-4 mr-2" />
-                分享
-              </Button>
+              <ShareModal planData={mockPlan}>
+                <Button variant="outline" size="sm">
+                  <Share2 className="h-4 w-4 mr-2" />
+                  分享
+                </Button>
+              </ShareModal>
               <Button variant="outline" size="sm">
                 <Download className="h-4 w-4 mr-2" />
                 下載

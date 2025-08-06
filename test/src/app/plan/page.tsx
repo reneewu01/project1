@@ -1,7 +1,30 @@
 import { TravelPlanForm } from '@/components/travel-plan-form'
 import { PlanResults } from '@/components/plan-results'
+import { SharedPlanView } from '@/components/shared-plan-view'
+import { Suspense } from 'react'
 
-export default function PlanPage() {
+interface PlanPageProps {
+  searchParams: { share?: string }
+}
+
+export default function PlanPage({ searchParams }: PlanPageProps) {
+  // 如果有分享參數，顯示分享的行程視圖
+  if (searchParams.share) {
+    return (
+      <Suspense fallback={
+        <div className="min-h-screen bg-background flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">載入中...</p>
+          </div>
+        </div>
+      }>
+        <SharedPlanView />
+      </Suspense>
+    )
+  }
+
+  // 否則顯示正常的行程規劃頁面
   return (
     <div className="min-h-screen bg-background">
       <div className="container py-8">
