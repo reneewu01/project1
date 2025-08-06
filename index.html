@@ -170,6 +170,31 @@
                 opacity: 1;
             }
         }
+        
+        .action-buttons {
+            margin-top: 20px;
+        }
+        
+        .action-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        
+        .action-btn:active {
+            transform: translateY(0);
+        }
     </style>
 </head>
 <body>
@@ -197,6 +222,12 @@
         
         <div class="controls">
             <strong>遊戲控制:</strong> ← → 移動飛船 | 空白鍵發射 | P 暫停 | 收集道具提升火力！
+        </div>
+        
+        <div class="action-buttons" style="margin-top: 20px; display: flex; justify-content: center; gap: 15px;">
+            <button class="action-btn" onclick="saveGameScore()">❤️ 收藏分數</button>
+            <button class="action-btn" onclick="shareGameScore()">📤 分享成績</button>
+            <button class="action-btn" onclick="downloadGameScore()">📥 下載成績</button>
         </div>
     </div>
     

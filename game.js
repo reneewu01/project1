@@ -672,4 +672,172 @@ pauseBtn.addEventListener('click', togglePause);
 
 // 初始化遊戲
 initEnemies();
-gameLoop(); 
+gameLoop();
+
+// 收藏遊戲分數功能
+function saveGameScore() {
+    try {
+        if (!gameState.gameRunning && gameState.score > 0) {
+            const scoreData = {
+                score: gameState.score,
+                level: gameState.level,
+                combo: gameState.combo,
+                date: new Date().toISOString(),
+                timestamp: Date.now()
+            };
+            
+            const savedScores = JSON.parse(localStorage.getItem('gameScores') || '[]');
+            savedScores.push(scoreData);
+            
+            // 只保留最近的10個分數
+            if (savedScores.length > 10) {
+                savedScores.splice(0, savedScores.length - 10);
+            }
+            
+            localStorage.setItem('gameScores', JSON.stringify(savedScores));
+            alert('分數已收藏！');
+        } else {
+            alert('請先完成遊戲再收藏分數！');
+        }
+    } catch (error) {
+        console.error('收藏失敗:', error);
+        alert('收藏失敗，請重試！');
+    }
+}
+
+// 分享遊戲成績功能
+function shareGameScore() {
+    try {
+        if (!gameState.gameRunning && gameState.score > 0) {
+            const shareText = `我在打小蜜蜂遊戲中獲得了 ${gameState.score} 分！\n等級：${gameState.level} | 最高連擊：${gameState.combo}`;
+            const shareUrl = window.location.href;
+            const textToCopy = `${shareText}\n\n遊戲連結：${shareUrl}`;
+            
+            if (navigator.share && navigator.share instanceof Function) {
+                navigator.share({
+                    title: '打小蜜蜂遊戲成績',
+                    text: shareText,
+                    url: shareUrl
+                }).catch(err => {
+                    console.log('原生分享失敗:', err);
+                    copyToClipboard(textToCopy);
+                });
+            } else {
+                copyToClipboard(textToCopy);
+            }
+        } else {
+            alert('請先完成遊戲再分享成績！');
+        }
+    } catch (error) {
+        console.error('分享失敗:', error);
+        alert('分享失敗，請重試！');
+    }
+}
+
+// 下載遊戲成績功能
+function downloadGameScore() {
+    try {
+        if (!gameState.gameRunning && gameState.score > 0) {
+            const scoreData = {
+                game: '打小蜜蜂遊戲',
+                score: gameState.score,
+                level: gameState.level,
+                combo: gameState.combo,
+                date: new Date().toLocaleString(),
+                timestamp: Date.now()
+            };
+            
+            const content = generateScoreContent(scoreData);
+            const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `打小蜜蜂遊戲成績_${scoreData.score}分.txt`;
+            a.style.display = 'none';
+            document.body.appendChild(a);
+            a.click();
+            
+            setTimeout(() => {
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }, 100);
+            
+            alert('成績已下載！');
+        } else {
+            alert('請先完成遊戲再下載成績！');
+        }
+    } catch (error) {
+        console.error('下載失敗:', error);
+        alert('下載失敗，請重試！');
+    }
+}
+
+// 生成成績內容
+function generateScoreContent(scoreData) {
+    let content = `🎮 打小蜜蜂遊戲成績單\n`;
+    content += `================================\n\n`;
+    content += `🏆 最終分數：${scoreData.score} 分\n`;
+    content += `🏅 最高等級：${scoreData.level} 關\n`;
+    content += `🔥 最高連擊：${scoreData.combo} 次\n`;
+    content += `📅 遊戲時間：${scoreData.date}\n\n`;
+    content += `🎯 遊戲說明：\n`;
+    content += `- 使用方向鍵移動飛船\n`;
+    content += `- 空白鍵發射子彈\n`;
+    content += `- 收集道具提升火力\n`;
+    content += `- 擊敗所有敵人過關\n`;
+    content += `- 每5關會出現Boss\n\n`;
+    content += `🌟 恭喜您完成遊戲！\n`;
+    content += `期待您下次挑戰更高分數！\n`;
+    
+    return content;
+}
+
+// 複製到剪貼板
+function copyToClipboard(text) {
+    try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('成績已複製到剪貼板！\n\n您可以貼到任何社群媒體或聊天軟體中分享。');
+            }).catch(() => {
+                copyToClipboardFallback(text);
+            });
+        } else {
+            copyToClipboardFallback(text);
+        }
+    } catch (error) {
+        console.error('複製失敗:', error);
+        copyToClipboardFallback(text);
+    }
+}
+
+// 剪貼板備用方法
+function copyToClipboardFallback(text) {
+    try {
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        textArea.style.top = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        
+        const successful = document.execCommand('copy');
+        document.body.removeChild(textArea);
+        
+        if (successful) {
+            alert('成績已複製到剪貼板！\n\n您可以貼到任何社群媒體或聊天軟體中分享。');
+        } else {
+            alert('無法自動複製，請手動複製以下內容：\n\n' + text);
+        }
+    } catch (error) {
+        console.error('複製失敗:', error);
+        alert('無法自動複製，請手動複製以下內容：\n\n' + text);
+    }
+}
+
+// 將函數綁定到全局作用域
+window.saveGameScore = saveGameScore;
+window.shareGameScore = shareGameScore;
+window.downloadGameScore = downloadGameScore; 

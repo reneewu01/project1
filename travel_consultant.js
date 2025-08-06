@@ -4,6 +4,7 @@ class TravelConsultant {
         this.form = document.getElementById('travelForm');
         this.loading = document.getElementById('loading');
         this.results = document.getElementById('results');
+        this.currentPlan = null; // 保存當前行程計劃
         this.init();
     }
 
@@ -57,6 +58,7 @@ class TravelConsultant {
 
     generateTravelPlan(data) {
         const plan = this.createTravelPlan(data);
+        this.currentPlan = plan; // 保存當前計劃
         this.displayResults(plan);
     }
 
@@ -464,6 +466,9 @@ class TravelConsultant {
             </div>
 
             <div style="text-align: center; margin-top: 30px;">
+                <button class="btn" onclick="downloadTravelPlan()">📥 下載行程</button>
+                <button class="btn" onclick="saveToFavorites()">❤️ 收藏行程</button>
+                <button class="btn" onclick="shareTravelPlan()">📤 分享行程</button>
                 <button class="btn" onclick="window.print()">🖨️ 列印行程</button>
                 <button class="btn" onclick="location.reload()">🔄 重新規劃</button>
             </div>
@@ -474,7 +479,210 @@ class TravelConsultant {
     }
 }
 
+// 下載行程功能
+function downloadTravelPlan() {
+    try {
+        const travelConsultant = window.travelConsultant;
+        if (!travelConsultant || !travelConsultant.currentPlan) {
+            alert('請先生成旅遊計劃！');
+            return;
+        }
+
+        const plan = travelConsultant.currentPlan;
+        const content = generateDownloadContent(plan);
+        
+        // 創建 Blob 對象
+        const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        
+        // 創建下載連結
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${plan.destination}旅遊計劃.txt`;
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+        
+        // 清理
+        setTimeout(() => {
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }, 100);
+        
+        alert('行程已下載！');
+    } catch (error) {
+        console.error('下載失敗:', error);
+        alert('下載失敗，請重試！');
+    }
+}
+
+// 生成下載內容
+function generateDownloadContent(plan) {
+    let content = `🌍 ${plan.destination} 旅遊計劃\n`;
+    content += `天數：${plan.duration}天 | 預算：${plan.budget}\n`;
+    content += `生成時間：${new Date().toLocaleString()}\n\n`;
+    
+    content += `🏢 推薦旅行社：\n`;
+    plan.services.travelAgency.forEach(agency => {
+        content += `- ${agency.name} (${agency.rating}⭐) ${agency.price}\n`;
+    });
+    
+    content += `\n🏨 推薦住宿：\n`;
+    plan.services.hotels.forEach(hotel => {
+        content += `- ${hotel.name} (${hotel.rating}⭐) ${hotel.price}\n`;
+    });
+    
+    content += `\n📅 詳細行程：\n`;
+    plan.itinerary.forEach(day => {
+        content += `\n第${day.day}天：${day.title}\n`;
+        day.activities.forEach(activity => {
+            content += `  • ${activity}\n`;
+        });
+    });
+    
+    content += `\n💡 旅遊建議：\n`;
+    content += `打包清單：\n`;
+    plan.recommendations.packing.forEach(item => {
+        content += `  • ${item}\n`;
+    });
+    
+    return content;
+}
+
+// 收藏行程功能
+function saveToFavorites() {
+    try {
+        const travelConsultant = window.travelConsultant;
+        if (!travelConsultant || !travelConsultant.currentPlan) {
+            alert('請先生成旅遊計劃！');
+            return;
+        }
+
+        const plan = travelConsultant.currentPlan;
+        const favorites = JSON.parse(localStorage.getItem('travelFavorites') || '[]');
+        
+        // 檢查是否已經收藏
+        const existingIndex = favorites.findIndex(fav => 
+            fav.destination === plan.destination && 
+            fav.duration === plan.duration
+        );
+        
+        if (existingIndex !== -1) {
+            favorites.splice(existingIndex, 1);
+            alert('已取消收藏！');
+        } else {
+            favorites.push({
+                ...plan,
+                savedAt: new Date().toISOString()
+            });
+            alert('已收藏到我的最愛！');
+        }
+        
+        localStorage.setItem('travelFavorites', JSON.stringify(favorites));
+        
+        // 更新按鈕文字
+        const saveBtn = document.querySelector('button[onclick="saveToFavorites()"]');
+        if (saveBtn) {
+            if (existingIndex !== -1) {
+                saveBtn.innerHTML = '❤️ 收藏行程';
+            } else {
+                saveBtn.innerHTML = '💔 取消收藏';
+            }
+        }
+    } catch (error) {
+        console.error('收藏失敗:', error);
+        alert('收藏失敗，請重試！');
+    }
+}
+
+// 分享行程功能
+function shareTravelPlan() {
+    try {
+        const travelConsultant = window.travelConsultant;
+        if (!travelConsultant || !travelConsultant.currentPlan) {
+            alert('請先生成旅遊計劃！');
+            return;
+        }
+
+        const plan = travelConsultant.currentPlan;
+        
+        // 檢查是否支援原生分享API
+        if (navigator.share && navigator.share instanceof Function) {
+            navigator.share({
+                title: `${plan.destination} 旅遊計劃`,
+                text: `我剛剛規劃了一個${plan.duration}天的${plan.destination}旅遊計劃！`,
+                url: window.location.href
+            }).catch(err => {
+                console.log('原生分享失敗:', err);
+                fallbackShare(plan);
+            });
+        } else {
+            fallbackShare(plan);
+        }
+    } catch (error) {
+        console.error('分享失敗:', error);
+        fallbackShare(plan);
+    }
+}
+
+// 備用分享方法
+function fallbackShare(plan) {
+    try {
+        const shareText = `我剛剛規劃了一個${plan.duration}天的${plan.destination}旅遊計劃！`;
+        const shareUrl = window.location.href;
+        
+        // 複製到剪貼板
+        const textToCopy = `${shareText}\n${shareUrl}`;
+        
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                alert('分享內容已複製到剪貼板！\n\n您可以貼到任何社群媒體或聊天軟體中分享。');
+            }).catch(() => {
+                // 備用方法
+                copyToClipboardFallback(textToCopy);
+            });
+        } else {
+            // 舊版瀏覽器備用方法
+            copyToClipboardFallback(textToCopy);
+        }
+    } catch (error) {
+        console.error('分享失敗:', error);
+        alert('分享功能暫時無法使用，請手動複製網址分享。');
+    }
+}
+
+// 剪貼板備用方法
+function copyToClipboardFallback(text) {
+    try {
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        textArea.style.top = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        
+        const successful = document.execCommand('copy');
+        document.body.removeChild(textArea);
+        
+        if (successful) {
+            alert('分享內容已複製到剪貼板！\n\n您可以貼到任何社群媒體或聊天軟體中分享。');
+        } else {
+            alert('無法自動複製，請手動複製以下內容：\n\n' + text);
+        }
+    } catch (error) {
+        console.error('複製失敗:', error);
+        alert('無法自動複製，請手動複製以下內容：\n\n' + text);
+    }
+}
+
+// 將函數綁定到全局作用域
+window.downloadTravelPlan = downloadTravelPlan;
+window.saveToFavorites = saveToFavorites;
+window.shareTravelPlan = shareTravelPlan;
+
 // 初始化旅遊諮詢系統
 document.addEventListener('DOMContentLoaded', () => {
-    new TravelConsultant();
+    window.travelConsultant = new TravelConsultant();
 }); 

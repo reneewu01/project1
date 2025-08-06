@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>功能測試頁面</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        
+        .btn {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        
+        .result {
+            margin-top: 15px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 功能測試頁面</h1>
+        
+        <div class="test-section">
+            <h2>📥 下載功能測試</h2>
+            <button class="btn" onclick="testDownload()">測試下載</button>
+            <div id="downloadResult" class="result" style="display: none;"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>❤️ 收藏功能測試</h2>
+            <button class="btn" onclick="testSave()">測試收藏</button>
+            <button class="btn" onclick="showFavorites()">查看收藏</button>
+            <div id="saveResult" class="result" style="display: none;"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>📤 分享功能測試</h2>
+            <button class="btn" onclick="testShare()">測試分享</button>
+            <div id="shareResult" class="result" style="display: none;"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>🎮 遊戲功能測試</h2>
+            <button class="btn" onclick="testGameFunctions()">測試遊戲功能</button>
+            <div id="gameResult" class="result" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        // 模擬旅遊計劃數據
+        const mockTravelPlan = {
+            destination: '日本東京',
+            duration: '5天',
+            budget: '標準型',
+            services: {
+                travelAgency: [
+                    { name: '東京旅行社', rating: '4.5', price: 'NT$ 25,000' }
+                ],
+                hotels: [
+                    { name: '東京飯店', rating: '4.0', price: 'NT$ 3,000/晚' }
+                ]
+            },
+            itinerary: [
+                {
+                    day: 1,
+                    title: '抵達東京',
+                    activities: ['機場接機', '飯店入住', '淺草寺參觀']
+                }
+            ],
+            recommendations: {
+                packing: ['護照', '現金', '相機']
+            }
+        };
+
+        // 模擬遊戲數據
+        const mockGameData = {
+            score: 1500,
+            level: 3,
+            combo: 25
+        };
+
+        // 測試下載功能
+        function testDownload() {
+            try {
+                const content = `測試文件內容\n生成時間：${new Date().toLocaleString()}\n這是一個測試文件。`;
+                const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'test_download.txt';
+                a.style.display = 'none';
+                document.body.appendChild(a);
+                a.click();
+                
+                setTimeout(() => {
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                }, 100);
+                
+                showResult('downloadResult', '✅ 下載功能測試成功！');
+            } catch (error) {
+                showResult('downloadResult', '❌ 下載功能測試失敗：' + error.message);
+            }
+        }
+
+        // 測試收藏功能
+        function testSave() {
+            try {
+                const testData = {
+                    id: Date.now(),
+                    name: '測試收藏項目',
+                    date: new Date().toISOString()
+                };
+                
+                const favorites = JSON.parse(localStorage.getItem('testFavorites') || '[]');
+                favorites.push(testData);
+                localStorage.setItem('testFavorites', JSON.stringify(favorites));
+                
+                showResult('saveResult', '✅ 收藏功能測試成功！已保存測試數據。');
+            } catch (error) {
+                showResult('saveResult', '❌ 收藏功能測試失敗：' + error.message);
+            }
+        }
+
+        // 顯示收藏內容
+        function showFavorites() {
+            try {
+                const favorites = JSON.parse(localStorage.getItem('testFavorites') || '[]');
+                if (favorites.length === 0) {
+                    showResult('saveResult', '📝 目前沒有收藏項目。');
+                } else {
+                    const result = favorites.map(fav => 
+                        `ID: ${fav.id}, 名稱: ${fav.name}, 時間: ${new Date(fav.date).toLocaleString()}`
+                    ).join('\n');
+                    showResult('saveResult', '📝 收藏項目：\n' + result);
+                }
+            } catch (error) {
+                showResult('saveResult', '❌ 讀取收藏失敗：' + error.message);
+            }
+        }
+
+        // 測試分享功能
+        function testShare() {
+            try {
+                const shareText = '這是一個測試分享內容！';
+                const shareUrl = window.location.href;
+                const textToCopy = `${shareText}\n${shareUrl}`;
+                
+                if (navigator.share && navigator.share instanceof Function) {
+                    navigator.share({
+                        title: '測試分享',
+                        text: shareText,
+                        url: shareUrl
+                    }).then(() => {
+                        showResult('shareResult', '✅ 原生分享功能測試成功！');
+                    }).catch(err => {
+                        console.log('原生分享失敗:', err);
+                        testClipboardCopy(textToCopy);
+                    });
+                } else {
+                    testClipboardCopy(textToCopy);
+                }
+            } catch (error) {
+                showResult('shareResult', '❌ 分享功能測試失敗：' + error.message);
+            }
+        }
+
+        // 測試剪貼板複製
+        function testClipboardCopy(text) {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(() => {
+                    showResult('shareResult', '✅ 剪貼板複製功能測試成功！');
+                }).catch(() => {
+                    testClipboardFallback(text);
+                });
+            } else {
+                testClipboardFallback(text);
+            }
+        }
+
+        // 剪貼板備用方法
+        function testClipboardFallback(text) {
+            try {
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                textArea.style.position = 'fixed';
+                textArea.style.left = '-999999px';
+                textArea.style.top = '-999999px';
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                
+                const successful = document.execCommand('copy');
+                document.body.removeChild(textArea);
+                
+                if (successful) {
+                    showResult('shareResult', '✅ 備用剪貼板功能測試成功！');
+                } else {
+                    showResult('shareResult', '⚠️ 剪貼板功能不可用，請手動複製：' + text);
+                }
+            } catch (error) {
+                showResult('shareResult', '❌ 剪貼板功能測試失敗：' + error.message);
+            }
+        }
+
+        // 測試遊戲功能
+        function testGameFunctions() {
+            try {
+                // 模擬遊戲結束狀態
+                const mockGameState = {
+                    gameRunning: false,
+                    score: mockGameData.score,
+                    level: mockGameData.level,
+                    combo: mockGameData.combo
+                };
+                
+                // 測試收藏遊戲分數
+                const scoreData = {
+                    score: mockGameData.score,
+                    level: mockGameData.level,
+                    combo: mockGameData.combo,
+                    date: new Date().toISOString(),
+                    timestamp: Date.now()
+                };
+                
+                const savedScores = JSON.parse(localStorage.getItem('testGameScores') || '[]');
+                savedScores.push(scoreData);
+                localStorage.setItem('testGameScores', JSON.stringify(savedScores));
+                
+                showResult('gameResult', `✅ 遊戲功能測試成功！\n分數：${mockGameData.score}\n等級：${mockGameData.level}\n連擊：${mockGameData.combo}`);
+            } catch (error) {
+                showResult('gameResult', '❌ 遊戲功能測試失敗：' + error.message);
+            }
+        }
+
+        // 顯示結果
+        function showResult(elementId, message) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.style.display = 'block';
+            
+            // 3秒後隱藏結果
+            setTimeout(() => {
+                element.style.display = 'none';
+            }, 5000);
+        }
+
+        // 頁面載入完成後顯示歡迎訊息
+        window.addEventListener('load', () => {
+            console.log('功能測試頁面已載入');
+            console.log('支援的功能：');
+            console.log('- navigator.share:', !!navigator.share);
+            console.log('- navigator.clipboard:', !!navigator.clipboard);
+            console.log('- localStorage:', !!localStorage);
+            console.log('- Blob:', !!Blob);
+            console.log('- URL.createObjectURL:', !!URL.createObjectURL);
+        });
+    </script>
+</body>
+</html> 
