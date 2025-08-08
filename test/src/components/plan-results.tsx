@@ -25,8 +25,255 @@ import {
 import { formatCurrency, formatDate, getActivityIcon, getAccommodationIcon, getTransportationIcon } from '@/lib/utils'
 import { ShareModal } from '@/components/share-modal'
 
-export function PlanResults() {
+interface PlanResultsProps {
+  shareId?: string
+}
+
+export function PlanResults({ shareId }: PlanResultsProps) {
   const { preferences, isLoading, currentPlan } = useTravelStore()
+
+  // 如果有分享ID，顯示分享的行程
+  if (shareId) {
+    const sharedPlan = {
+      id: shareId,
+      title: '東京文化之旅',
+      destination: '東京',
+      duration: 5,
+      budget: 50000,
+      totalCost: 45000,
+      travelers: {
+        adults: 2,
+        children: 0,
+        seniors: 0
+      },
+      itinerary: [
+        {
+          day: 1,
+          date: '2024-03-15',
+          activities: [
+            {
+              id: 'act-1-1',
+              name: '抵達東京',
+              description: '抵達成田機場，辦理入住手續',
+              type: 'sightseeing',
+              duration: 120,
+              cost: 0,
+              rating: 4.5
+            },
+            {
+              id: 'act-1-2',
+              name: '淺草寺參觀',
+              description: '參觀東京最古老的寺廟',
+              type: 'cultural',
+              duration: 180,
+              cost: 0,
+              rating: 4.8
+            }
+          ],
+          meals: [
+            {
+              id: 'meal-1-1',
+              name: '拉麵午餐',
+              description: '品嚐正宗日式拉麵',
+              type: 'lunch',
+              cost: 1200
+            }
+          ],
+          accommodation: {
+            id: 'acc-1',
+            name: '東京希爾頓酒店',
+            type: 'hotel',
+            cost: 8000,
+            rating: 4.6
+          },
+          transportation: [
+            {
+              id: 'trans-1-1',
+              name: '機場快線',
+              type: 'train',
+              cost: 3000,
+              duration: 60
+            }
+          ]
+        }
+      ]
+    }
+
+    return (
+      <div className="space-y-6">
+        {/* 行程概覽 */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-2xl">{sharedPlan.title}</CardTitle>
+                <CardDescription>
+                  分享的智能旅遊行程
+                </CardDescription>
+              </div>
+              <div className="flex space-x-2">
+                <Button variant="outline" size="sm">
+                  <Bookmark className="h-4 w-4 mr-2" />
+                  收藏
+                </Button>
+                <ShareModal planData={sharedPlan}>
+                  <Button variant="outline" size="sm">
+                    <Share2 className="h-4 w-4 mr-2" />
+                    分享
+                  </Button>
+                </ShareModal>
+                <Button variant="outline" size="sm">
+                  <Download className="h-4 w-4 mr-2" />
+                  下載
+                </Button>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="flex items-center space-x-2">
+                <Calendar className="h-5 w-5 text-muted-foreground" />
+                <div>
+                  <p className="text-sm font-medium">{sharedPlan.duration}天</p>
+                  <p className="text-xs text-muted-foreground">旅遊天數</p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Users className="h-5 w-5 text-muted-foreground" />
+                <div>
+                  <p className="text-sm font-medium">
+                    {sharedPlan.travelers.adults + sharedPlan.travelers.children + sharedPlan.travelers.seniors}人
+                  </p>
+                  <p className="text-xs text-muted-foreground">旅客人數</p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-2">
+                <DollarSign className="h-5 w-5 text-muted-foreground" />
+                <div>
+                  <p className="text-sm font-medium">{formatCurrency(sharedPlan.totalCost)}</p>
+                  <p className="text-xs text-muted-foreground">總預算</p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-2">
+                <MapPin className="h-5 w-5 text-muted-foreground" />
+                <div>
+                  <p className="text-sm font-medium">{sharedPlan.destination}</p>
+                  <p className="text-xs text-muted-foreground">目的地</p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* 每日行程 */}
+        <div className="space-y-4">
+          <h3 className="text-xl font-semibold">每日行程</h3>
+          {sharedPlan.itinerary.map((day) => (
+            <Card key={day.day} className="border-l-4 border-l-primary">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <span className="bg-primary text-primary-foreground rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">
+                    {day.day}
+                  </span>
+                  <span>第 {day.day} 天 - {formatDate(day.date)}</span>
+                  <span className="text-sm text-muted-foreground ml-auto">
+                    {day.activities.reduce((sum, act) => sum + act.duration, 0)}分鐘
+                  </span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* 活動 */}
+                <div>
+                  <h4 className="font-semibold mb-3 flex items-center">
+                    <Clock className="h-4 w-4 mr-2" />
+                    活動安排
+                  </h4>
+                  <div className="space-y-3">
+                    {day.activities.map((activity) => (
+                      <div key={activity.id} className="flex items-start space-x-3 p-3 bg-muted/50 rounded-lg">
+                        <span className="text-2xl mt-1">{getActivityIcon(activity.type)}</span>
+                        <div className="flex-1">
+                          <p className="font-medium">{activity.name}</p>
+                          <p className="text-sm text-muted-foreground">{activity.description}</p>
+                          <div className="flex items-center space-x-4 mt-2 text-xs text-muted-foreground">
+                            <span>⏱️ {activity.duration}分鐘</span>
+                            <span>💰 {formatCurrency(activity.cost)}</span>
+                            <span>⭐ {activity.rating.toFixed(1)}</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 餐飲 */}
+                <div>
+                  <h4 className="font-semibold mb-3 flex items-center">
+                    <Utensils className="h-4 w-4 mr-2" />
+                    餐飲安排
+                  </h4>
+                  <div className="space-y-3">
+                    {day.meals.map((meal) => (
+                      <div key={meal.id} className="flex items-start space-x-3 p-3 bg-muted/50 rounded-lg">
+                        <span className="text-2xl mt-1">🍽️</span>
+                        <div className="flex-1">
+                          <p className="font-medium">{meal.name}</p>
+                          <p className="text-sm text-muted-foreground">{meal.description}</p>
+                          <div className="flex items-center space-x-4 mt-2 text-xs text-muted-foreground">
+                            <span>💰 {formatCurrency(meal.cost)}</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 住宿 */}
+                <div>
+                  <h4 className="font-semibold mb-3 flex items-center">
+                    <Bed className="h-4 w-4 mr-2" />
+                    住宿安排
+                  </h4>
+                  <div className="flex items-start space-x-3 p-3 bg-muted/50 rounded-lg">
+                    <span className="text-2xl mt-1">{getAccommodationIcon(day.accommodation.type)}</span>
+                    <div className="flex-1">
+                      <p className="font-medium">{day.accommodation.name}</p>
+                      <div className="flex items-center space-x-4 mt-2 text-xs text-muted-foreground">
+                        <span>💰 {formatCurrency(day.accommodation.cost)}</span>
+                        <span>⭐ {day.accommodation.rating.toFixed(1)}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 交通 */}
+                <div>
+                  <h4 className="font-semibold mb-3 flex items-center">
+                    <Plane className="h-4 w-4 mr-2" />
+                    交通安排
+                  </h4>
+                  <div className="space-y-3">
+                    {day.transportation.map((transport) => (
+                      <div key={transport.id} className="flex items-start space-x-3 p-3 bg-muted/50 rounded-lg">
+                        <span className="text-2xl mt-1">{getTransportationIcon(transport.type)}</span>
+                        <div className="flex-1">
+                          <p className="font-medium">{transport.name}</p>
+                          <div className="flex items-center space-x-4 mt-2 text-xs text-muted-foreground">
+                            <span>⏱️ {transport.duration}分鐘</span>
+                            <span>💰 {formatCurrency(transport.cost)}</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    )
+  }
 
   if (!preferences) {
     return (
